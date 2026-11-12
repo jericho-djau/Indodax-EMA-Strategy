@@ -1,0 +1,2 @@
+{"name":"indodax-ema-bot","version":"1.0.0","private":true,"type":"module","engines":{"node":">=20"},
+"scripts":{"fetch":"node scripts/fetch_history.js","backtest":"node scripts/backtest.js","export":"node scripts/export_logs.js","hitung":"node scripts/hitung_ulang.js"}}

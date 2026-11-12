@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bot EMA 50/100/150 Indodax – Backtest vs Forward Test</title>
+<style>
+:root{--bg:#f6f7f4;--ink:#17201c;--mut:#5d6a63;--line:#d9ddd5;--fw:#0b6b57;--bt:#8a6d1f;--bad:#a6312b;--card:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#121714;--ink:#e8ede9;--mut:#9aa8a0;--line:#2a332d;--fw:#4fd1b0;--bt:#d8b45a;--bad:#ef7b73;--card:#1a211d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,'Times New Roman',serif;padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+main{max-width:920px;margin:0 auto}h1{font-size:1.5rem;margin:.2rem 0}h2{font-size:1.1rem;margin:2rem 0 .5rem}
+p.s,.mut{color:var(--mut);font-size:.9rem}table{width:100%;border-collapse:collapse;font:14px/1.4 system-ui,sans-serif}
+th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}th{font-weight:600}
+.w{overflow-x:auto}.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.hero div{background:var(--card);border:1px solid var(--line);padding:12px;border-radius:6px}
+.hero b{display:block;font-size:1.6rem;font-family:system-ui,sans-serif}.neg{color:var(--bad)}svg{width:100%;height:auto;background:var(--card);border:1px solid var(--line);border-radius:6px}
+.lg span{margin-right:14px;font:13px system-ui}.lg i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle}
+@media(max-width:560px){.hero{grid-template-columns:1fr}}
+</style></head><body><main>
+<h1>Bot EMA 50/100/150 di Indodax</h1>
+<p class="s" id="sub">Memuat data…</p>
+<div id="app"></div></main>
+<!--DATA-->
+<script>
+const $=s=>document.getElementById(s);
+const pc=x=>x==null?'n/a':(x*100).toFixed(2)+'%',rp=x=>x==null?'n/a':'Rp'+Math.round(x).toLocaleString('id-ID'),nm=(x,d=2)=>x==null?'n/a':x.toFixed(d);
+const cls=x=>x<0?' class="neg"':'';const dt=t=>t?new Date(t*1000).toLocaleString('id-ID',{timeZone:'Asia/Jakarta'})+' WIB':'-';
+function chart(ss){const W=640,H=220,P=28;let all=ss.flatMap(s=>s.p);if(!all.length)return'<p class="mut">Belum ada data equity.</p>';
+const x0=Math.min(...all.map(p=>p.t)),x1=Math.max(...all.map(p=>p.t))||1,y0=Math.min(...all.map(p=>p.v),100),y1=Math.max(...all.map(p=>p.v),100);
+const X=t=>P+(W-2*P)*(t-x0)/((x1-x0)||1),Y=v=>H-P-(H-2*P)*(v-y0)/((y1-y0)||1);
+const ln=ss.map(s=>`<polyline fill="none" stroke="${s.c}" stroke-width="2" points="${s.p.map(p=>X(p.t).toFixed(1)+','+Y(p.v).toFixed(1)).join(' ')}"/>`).join('');
+return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kurva equity"><line x1="${P}" x2="${W-P}" y1="${Y(100)}" y2="${Y(100)}" stroke="currentColor" opacity=".25" stroke-dasharray="4"/>
+<text x="4" y="${Y(100)+4}" font-size="11" fill="currentColor">100</text><text x="4" y="${P}" font-size="11" fill="currentColor">${y1.toFixed(1)}</text><text x="4" y="${H-P}" font-size="11" fill="currentColor">${y0.toFixed(1)}</text>${ln}</svg>
+<div class="lg">${ss.map(s=>`<span><i style="background:${s.c}"></i>${s.n}</span>`).join('')}</div>`;}
+const norm=(a,k)=>a.length?a.map(p=>({t:p.t,v:p[k]/a[0][k]*100})):[];
+function render(D){const F=D.forward,B=D.backtest,G=D.gap,O=D.ops,fs=F.stats;
+$('sub').textContent=`Modal virtual ${rp(D.capital)} · forward test ${dt(F.start)} sampai ${dt(F.end)} · data dihitung ${dt(D.generatedAt)}`;
+const gb=G&&G.btStats;
+const row=(n,a,b,c)=>`<tr><td>${n}</td><td>${a}</td><td>${b}</td><td>${c}</td></tr>`;
+$('app').innerHTML=`
+<div class="hero"><div><span class="mut">Return forward test</span><b${cls(F.returnPct)}>${pc(F.returnPct)}</b></div>
+<div><span class="mut">Return backtest, jendela sama</span><b${cls(G?.btReturn)}>${pc(G?.btReturn)}</b></div>
+<div><span class="mut">Gap (forward − backtest)</span><b${cls(D.gapReturn)}>${pc(D.gapReturn)}</b></div></div>
+<h2>Kurva equity (awal = 100)</h2>${chart([{n:'Forward test',c:'var(--fw)',p:norm(F.equity.map(e=>({t:e.t,e:e.eq})),'e')},{n:'Backtest jendela sama',c:'var(--bt)',p:norm((G?.btEquity||[]).map(e=>({t:e.t,e:e.eq})),'e')}])}
+<h2>Metrik</h2><div class="w"><table><tr><th></th><th>Backtest ${B?Math.round(B.days/365*10)/10+' th':''}</th><th>Backtest jendela forward</th><th>Forward test</th></tr>
+${row('Return total',pc(B?.returnPct),pc(G?.btReturn),pc(F.returnPct))}
+${row('CAGR',pc(B?.cagr),'tidak bermakna','tidak ditampilkan')}
+${row('Max drawdown',pc(B?.maxDD),pc(G?.btMaxDD),pc(F.maxDD))}
+${row('Jumlah trade',B?.stats.trades??'n/a',gb?.trades??'n/a',fs.trades)}
+${row('Win rate',pc(B?.stats.winRate),pc(gb?.winRate),pc(fs.winRate))}
+${row('Rata-rata untung / trade',rp(B?.stats.avgWin),rp(gb?.avgWin),rp(fs.avgWin))}
+${row('Rata-rata rugi / trade',rp(B?.stats.avgLoss),rp(gb?.avgLoss),rp(fs.avgLoss))}
+${row('Profit factor',nm(B?.stats.profitFactor),nm(gb?.profitFactor),nm(fs.profitFactor))}
+${row('Porsi biaya (fee+spread+slippage)/laba kotor',pc(B?.stats.costShare),pc(gb?.costShare),pc(fs.costShare))}
+${row('Buy and hold BTC/IDR',pc(B?.bench?.returnPct),pc(G?.btBench?.returnPct),pc(F.buyHoldBTC))}</table></div>
+<p class="mut">Porsi biaya "n/a" berarti laba kotor ≤ 0 atau belum ada trade. Profit factor "n/a" berarti belum ada trade rugi.</p>
+<h2>Kecocokan sinyal backtest vs bot</h2>${G?`<p>${G.signalMatch.match} dari ${G.signalMatch.total} sinyal sama (${pc(G.signalMatch.pct)}). Selisih fill per trade:</p>
+<div class="w"><table><tr><th>Pair</th><th>Sisi</th><th>Fill bot</th><th>Fill backtest</th><th>Selisih</th><th>vs harga sinyal</th></tr>${G.fillDiffs.map(f=>`<tr><td>${f.pair}</td><td>${f.side}</td><td>${rp(f.botFill)}</td><td>${rp(f.backtestFill)}</td><td>${pc(f.diffPct)}</td><td>${pc(f.slipVsSignal)}</td></tr>`).join('')||'<tr><td colspan=6>Belum ada order.</td></tr>'}</table></div>
+${G.signalMatch.mismatches.length?`<p class="neg">${G.signalMatch.mismatches.length} sinyal berbeda, lihat data/gap_result.json.</p>`:''}`:'<p class="mut">Menunggu hitung_ulang (butuh candle jendela forward).</p>'}
+<h2>Spread: asumsi backtest vs terukur</h2><div class="w"><table><tr><th>Pair</th><th>Asumsi backtest</th><th>Median seluruh snapshot</th><th>Snapshot</th></tr>
+${Object.entries(D.spreads).map(([p,s])=>`<tr><td>${p}</td><td>${pc(s.assumedBacktest)}</td><td>${pc(s.measuredAll)}</td><td>${s.n}</td></tr>`).join('')}</table></div>
+<h2>Operasional</h2><div class="w"><table>
+${row('Candle terjadwal / terproses tepat waktu',O.scheduledExpected,O.processedOnTime,'')}
+${row('Uptime',pc(O.uptimePct),'','')}
+${row('Panggilan bot / error API',O.calls,O.errors,'')}
+${row('Kill switch / daily loss halt / entri diblokir',O.killSwitchEvents,O.dailyLossHalts,O.blockedEntries)}</table></div>
+<h2>Equity harian (00.00 WIB)</h2><div class="w"><table><tr><th>Hari</th><th>Equity</th></tr>${F.daily.map(d=>`<tr><td>${d.day}</td><td>${rp(d.equity)}</td></tr>`).join('')}</table></div>
+<h2>Trade selesai</h2><div class="w"><table><tr><th>Pair</th><th>Masuk</th><th>Keluar</th><th>Alasan</th><th>P&amp;L</th></tr>${F.trades.map(t=>`<tr><td>${t.pair}</td><td>${dt(t.entryT)}</td><td>${dt(t.exitT)}</td><td>${t.reason}</td><td${cls(t.pnl)}>${rp(t.pnl)}</td></tr>`).join('')||'<tr><td colspan=5>Belum ada trade selesai.</td></tr>'}</table></div>`;}
+(window.__DATA__?Promise.resolve(window.__DATA__):fetch('/api/data').then(r=>r.json())).then(render).catch(e=>{$('sub').textContent='Gagal memuat data: '+e.message;});
+</script></body></html>
