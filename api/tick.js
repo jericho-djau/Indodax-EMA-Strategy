@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     // info pair: presisi kuantitas + bukti tarif/minimum dari /api/pairs
     const info = {};
     try { for (const x of await ix.pairsInfo()) { const k = String(x.id || x.symbol || '').toLowerCase().replace('_', '');
-        if (CFG.pairs.includes(k)) { const vp = Number(x.volume_precision); info[k] = { vp: vp > 0 ? vp : 8, minBase: x.trade_min_base_currency, feeTaker: x.trade_fee_percent_taker }; } }
+       if (CFG.pairs.includes(k)) { const qi = Number(x.quantity_increment); const vp = qi > 0 ? Math.min(12, Math.max(0, Math.round(-Math.log10(qi)))) : 8; info[k] = { vp, minBase: x.trade_min_base_currency, feeTaker: x.trade_fee_percent_taker }; } }
       call.pairInfo = info; } catch (e) { await err('pairs', e); }
 
     // order book semua pair (+ snapshot untuk estimasi spread/slippage)
