@@ -5,11 +5,17 @@ Kriteria: pasangan paling likuid di Indodax. Anti-survivorship: `npm run fetch` 
 pada 30 hari PERTAMA data backtest tiap pasangan. Tempel angkanya di bawah (isi sendiri setelah menjalankan).
 Catatan: USDT/IDR hampir datar, sehingga sinyal EMA jarang muncul. Ini wajar dan harus dijelaskan di refleksi.
 
-| Pair | Nilai transaksi rata-rata/hari, 30 hari pertama backtest |
-|---|---|
-| btcidr | (isi) |
-| usdtidr | (isi) |
-| solidr | (isi) |
+**Kriteria pemilihan:** pasangan IDR dengan nilai transaksi harian rata-rata di atas Rp1 miliar, diukur pada 30 hari pertama data (16 Okt sampai 15 Nov 2023), yaitu 30 hari tepat sebelum backtest dimulai. Pengukuran memakai kondisi awal periode, bukan kondisi hari ini, supaya tidak terkena survivorship bias.
+
+| Pair | Nilai transaksi rata-rata per hari (30 hari pertama, mulai 16 Okt 2023) | Bar 1 jam | Gap |
+|---|---|---|---|
+| btcidr | Rp21.883.334.805 | 27.001 | 0 |
+| usdtidr | Rp36.698.512.006 | 27.001 | 0 |
+| solidr | Rp3.682.493.379 | 27.001 | 0 |
+
+Nilai transaksi dihitung dari jumlah (close x volume) per bar, dicetak oleh `npm run fetch` (`scripts/fetch_history.js`). Ketiga pair lolos kriteria pada awal periode, dan ketiganya punya data lengkap tanpa gap selama 3 tahun lebih.
+
+Catatan: tanggal mulai data (16 Okt 2023) adalah batas penarikan data oleh skrip (3 tahun + 30 hari buffer pemanasan EMA), bukan tanggal pasangan itu pertama kali listing.
 
 **Aturan masuk (BUY):** pada candle 1 jam yang BARU TERTUTUP, `close > EMA50 > EMA100 > EMA150` terpenuhi, dan pada candle sebelumnya
 susunan itu belum terpenuhi (sinyal hanya saat susunan baru terbentuk). Posisi saat itu harus flat. Eksekusi: beli di ask order book.
