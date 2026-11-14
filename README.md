@@ -49,7 +49,7 @@ Dry run: tidak ada uang sungguhan, tidak ada API key Indodax. Strategi lengkap: 
 
 ## Freeze (isi)
 - Waktu mulai forward test (WIB): 2026-11-14 10:27:38
-- Hash commit freeze: 
+- Hash commit freeze: commit 1e3a0ff5857b3fabb01114445e54e4fc29e32b3e (HEAD -> main, origin/main)
 ## Log bug (isi bila ada)
 - 12 Nov 2026: /api/server_time dari Vercel mengembalikan HTTP 403. Diperbaiki dengan mengganti header User-Agent di lib/indodax.js (tidak mengubah aturan strategi).
 - 14 Nov 2026: Redis dikosongkan (FLUSHDB) sebelum freeze untuk membuang log tes koneksi 12-14 Nov. Tidak ada perubahan kode atau aturan.
