@@ -48,11 +48,11 @@ Dry run: tidak ada uang sungguhan, tidak ada API key Indodax. Strategi lengkap: 
 - Minimum order dipakai Rp25.000 (Pro) vs `trade_min_base_currency` = ...
 
 ## Freeze (isi)
-- Waktu mulai forward test (WIB): ...
-- Hash commit freeze: ...
-
+- Waktu mulai forward test (WIB): 2026-11-14 10:27:38
+- Hash commit freeze: 
 ## Log bug (isi bila ada)
-
+- 12 Nov 2026: /api/server_time dari Vercel mengembalikan HTTP 403. Diperbaiki dengan mengganti header User-Agent di lib/indodax.js (tidak mengubah aturan strategi).
+- 14 Nov 2026: Redis dikosongkan (FLUSHDB) sebelum freeze untuk membuang log tes koneksi 12-14 Nov. Tidak ada perubahan kode atau aturan.
 ## Catatan perilaku yang perlu dijelaskan di refleksi
 - Candle yang terlewat (jadwal GitHub terlambat/tidak jalan) tidak diproses mundur; bot memproses candle tertutup terbaru. Ini turun ke angka uptime.
 - Kill switch hanya memblokir entri baru; exit tetap berjalan. Setiap pemakaian tercatat di `log:events`.
