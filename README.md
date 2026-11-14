@@ -42,10 +42,13 @@ Dry run: tidak ada uang sungguhan, tidak ada API key Indodax. Strategi lengkap: 
 15. ZIP semuanya (termasuk folder `.git`, tanpa `.env`) dan kirim ke RISE dengan link Vercel dan repositori di kolom catatan.
 
 ## Bukti tarif (isi)
-- /api/pairs, diakses (tanggal): taker = ...
-- Halaman rincian biaya, URL + tanggal: taker all-in = ...
-- Dipakai: ...
-- Minimum order dipakai Rp25.000 (Pro) vs `trade_min_base_currency` = ...
+- Sumber 1: https://indodax.com/api/pairs, diakses (3 Nov 2026).
+  btcidr, usdtidr, solidr: trade_fee_percent_taker = 0.2%, trade_min_base_currency = 10000, quantity_increment = 1e-8.
+- Sumber 2: https://help.indodax.com/hc/id/articles/4416646599705-Rincian-Biaya-Transaksi-di-INDODAX (3 Nov 2026).
+  Tabel IDR Market, Pro Mode, Taker: beli all-in 0.20555%, jual all-in 0.41555%
+  (service fee 0.20% + pajak 0% beli / 0.21% jual + CFX fee 0.00555%). Gambar tabel: bukti_tarif_indodax.png.
+- Dipakai (lebih mahal di kedua sisi, sumber 2): beli 0.20555% (feeBuy = 0.0020555), jual 0.41555% (feeSell = 0.0041555) di lib/config.js.
+- Minimum order: Rp25.000 (order langsung di mode Pro) dibanding Rp10.000 (API). Dipakai Rp25.000.
 
 ## Freeze (isi)
 - Waktu mulai forward test (WIB): 2026-11-14 10:27:38
@@ -53,10 +56,11 @@ Dry run: tidak ada uang sungguhan, tidak ada API key Indodax. Strategi lengkap: 
 - Commit freeze: 1e3a0ff (commit FREEZE pertama).
 - Ada commit FREEZE kedua (2750d57) dan dua commit "catat hash freeze" (18968fa, f2436ab) karena perintah commit terjalankan dua kali. Isinya hanya README; lib/, api/, dan vercel.json tidak berubah sejak 1e3a0ff (dicek dengan git diff).
 ## Log bug (isi bila ada)
-- 12 Nov 2026: /api/server_time dari Vercel mengembalikan HTTP 403. Diperbaiki dengan mengganti header User-Agent di lib/indodax.js (tidak mengubah aturan strategi).
-- 14 Nov 2026: Redis dikosongkan (FLUSHDB) sebelum freeze untuk membuang log tes koneksi 12-14 Nov. Tidak ada perubahan kode atau aturan.
+- 13 Nov 2026 sekitar 23.29 WIB: /api/server_time dari Vercel mengembalikan HTTP 403. Diperbaiki dengan mengganti header User-Agent di lib/indodax.js. Tidak mengubah aturan strategi.
+- (14 Nov 2026): sintaks .github/workflows/tick.yml diperbaiki agar workflow terbaca. Hanya penjadwal, bukan aturan.
+- (14 Nov 2026): Redis dikosongkan (FLUSHDB) sebelum freeze untuk membuang log tes koneksi. Tidak ada perubahan kode atau aturan.
 ## Catatan perilaku yang perlu dijelaskan di refleksi
-- Candle yang terlewat (jadwal GitHub terlambat/tidak jalan) tidak diproses mundur; bot memproses candle tertutup terbaru. Ini turun ke angka uptime.
-- Kill switch hanya memblokir entri baru; exit tetap berjalan. Setiap pemakaian tercatat di `log:events`.
-- Fill backtest = close candle ± (setengah spread + slippage) terukur; fill bot = menelusuri order book sungguhan. Selisihnya adalah bahan refleksi.
-- Kuantitas dibulatkan ke bawah sesuai `volume_precision` dari /api/pairs. Kenaikan harga tidak perlu dibulatkan karena fill mengikuti level order book.
+- Penjadwal: GitHub Actions (cron menit ke-7 tiap jam), ditambah (ISI: cron-job.org sebagai cadangan, bila dipasang).
+- Run manual lewat "Run workflow": (uji awal setelah freeze dan percobaan untuk menghindari risiko penjadwalan tertunda).
+- Jadwal GitHub kadang terlambat atau terlewat. Dampaknya pada uptime dijelaskan di REFLEKSI.md.
+- Kill switch (/api/kill) tidak dipakai selama forward test.

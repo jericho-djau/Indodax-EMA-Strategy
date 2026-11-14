@@ -30,4 +30,8 @@ Eksekusi: jual di bid.
 **EMA:** dihitung dari jendela tetap 500 candle tertutup terakhir (seed = SMA n bar pertama), identik di bot dan backtest.
 
 ## Catatan perubahan dari versi UTS
-(isi sendiri: strategi UTS saham harian diganti ke EMA 50/100/150 1 jam untuk kripto; alasan dan tanggal)
+## Catatan perubahan dari versi UTS
+- Aset dan timeframe: dari saham harian (UTS) menjadi kripto IDR di Indodax, timeframe 1 jam. Alasan: pasar kripto buka 24 jam dan soal UAS mewajibkan data live Indodax.
+- Aturan masuk dan keluar: diganti ke susunan EMA 50/100/150. Masuk saat close > EMA50 > EMA100 > EMA150 baru terbentuk. Keluar saat close < EMA100 atau close turun 4% dari harga sinyal masuk.
+- Sizing dan risk: maks 3 posisi, 30% equity per posisi, daily loss limit 3% (hari WIB), kill switch, idempotency per candle.
+- Perubahan dilakukan sebelum freeze (commit 1e3a0ff). Tidak ada perubahan aturan setelah freeze.
